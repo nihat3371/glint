@@ -135,10 +135,35 @@ class ChatForm : Form
         if (IsHandleCreated) BeginInvoke(a); else a();
     }
 
+    [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr h);
+
+    // Browser control first, then the textarea (the other order loses the caret); retried until the page is ready.
     void FocusInput()
     {
-        Js("focusInput");
-        if (!OffScreen) { try { web.Focus(); } catch { } }
+        if (OffScreen) { Js("focusInput"); return; }
+        int tries = 0;
+        var tm = new System.Windows.Forms.Timer { Interval = 60 };
+        tm.Tick += delegate
+        {
+            if (!Visible || ++tries > 25) { tm.Stop(); tm.Dispose(); return; }
+            try
+            {
+                SetForegroundWindow(Handle);
+                var d = web.Document;
+                var t = d == null ? null : d.GetElementById("ta");
+                if (!ready || t == null) return;
+                web.Focus(); d.Focus(); t.Focus();
+                web.Document.InvokeScript("focusInput");
+                tm.Stop(); tm.Dispose();
+            }
+            catch { }
+        };
+        tm.Start();
+    }
+
+    public string InputValue()
+    {
+        try { return web.Document.GetElementById("ta").GetAttribute("value"); } catch { return null; }
     }
 
     void SetStatus(string s) { Js("setStatus", s); }

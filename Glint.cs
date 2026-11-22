@@ -49,6 +49,7 @@ static class App
     static void Main(string[] args)
     {
         args = ApplyFlags(args);
+        if (args.Length >= 2 && args[0] == "--focustest") { FocusTest(args[1]); return; }
         if (args.Length >= 2 && (args[0] == "--demo" || args[0] == "--test"))
         {
             Application.ThreadException += (s, e) => { File.WriteAllText(args[args.Length - 1] + ".err.txt", e.Exception.ToString()); Environment.Exit(1); };
@@ -66,6 +67,42 @@ static class App
         var tray = new Tray();
         Application.Run();
         GC.KeepAlive(tray); GC.KeepAlive(mx);
+    }
+
+    [DllImport("user32.dll")] static extern IntPtr GetFocus();
+    [DllImport("user32.dll")] static extern bool PostMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr h, StringBuilder s, int n);
+
+    // Run on a hidden Win32 desktop: opens the chat like the hotkey does, "types" abc into the focused
+    // window with WM_CHAR (no real keyboard input) and reports where the text landed.
+    static void FocusTest(string outTxt)
+    {
+        SetProcessDPIAware();
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+        S = Settings.Load();
+        var f = new ChatForm();
+        int step = 0;
+        var t = new System.Windows.Forms.Timer { Interval = 250 };
+        t.Tick += delegate
+        {
+            step++;
+            if (step == 1) f.NewConversation(new Bitmap(800, 500), "Test", "");
+            else if (step == 10)
+            {
+                IntPtr h = GetFocus();
+                foreach (char c in "abc") PostMessage(h, 0x0102 /*WM_CHAR*/, (IntPtr)c, (IntPtr)1);
+            }
+            else if (step == 14)
+            {
+                t.Stop();
+                var cls = new StringBuilder(64); GetClassName(GetFocus(), cls, 64);
+                File.WriteAllText(outTxt, "focus=" + cls + " value=" + f.InputValue());
+                f.Shutdown(); Application.ExitThread();
+            }
+        };
+        t.Start();
+        Application.Run();
     }
 
     // Invisible self-test: window lives off-screen, never activates, result saved as PNG.
