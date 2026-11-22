@@ -490,7 +490,8 @@ scrollbar-shadow-color:#D9D7CE;scrollbar-highlight-color:#FAF9F5;scrollbar-3dlig
 .card{background:#FFFFFF;border:1px solid #E8E6DC;border-radius:20px;box-shadow:0 1px 6px rgba(0,0,0,.05);padding:10px 12px 8px}
 #ta{display:block;width:100%;border:0;outline:none;resize:none;background:transparent;color:#141413;
 font:14.5px/21px 'Segoe UI',Arial,sans-serif;padding:2px 4px;min-height:25px;max-height:168px;overflow-y:auto}
-#ta:-ms-input-placeholder{color:#9C9A92}
+#tawrap{position:relative}
+#ph{position:absolute;left:4px;top:2px;font:14.5px/21px 'Segoe UI',Arial,sans-serif;color:#9C9A92;pointer-events:none}
 #ta::-ms-clear{display:none}
 .row2{margin-top:6px;display:flex;align-items:center}
 .ghost{display:inline-block;background:none;border:0;color:#73726C;font:12.5px 'Segoe UI',Arial,sans-serif;
@@ -517,6 +518,8 @@ border:1px solid #E8E6DC;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12
 .msg{word-wrap:break-word;animation:fade .18s ease-out}
 .shot{animation:fade .18s ease-out}
 @keyframes fade{from{opacity:0}to{opacity:1}}
+.ai pre,.ai pre code{line-height:1.5}
+.ai table{font:13.5px/1.45 'Segoe UI',Arial,sans-serif}
 .me{display:table;margin:8px 0 8px auto;max-width:85%;background:#F0EEE6;border-radius:18px;padding:10px 14px}
 .ai{margin:6px 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:15.5px;line-height:1.65;color:#141413}
 .ai.err{font-family:'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.5;color:#B4492F}
@@ -560,7 +563,8 @@ scrollbar-shadow-color:#3D3D3A;scrollbar-highlight-color:#262624;scrollbar-3dlig
 .dark body{background:#262624;color:#ECEBE4}
 .dark #log{scrollbar-face-color:#4A4A46;scrollbar-track-color:#262624;scrollbar-arrow-color:#9C9A92;scrollbar-shadow-color:#4A4A46;scrollbar-highlight-color:#4A4A46;scrollbar-3dlight-color:#262624;scrollbar-darkshadow-color:#262624}
 .dark #ta{color:#ECEBE4}
-.dark #ta:-ms-input-placeholder{color:#9C9A92}
+.dark #tawrap{position:relative}
+#ph{position:absolute;left:4px;top:2px;font:14.5px/21px 'Segoe UI',Arial,sans-serif;color:#9C9A92;pointer-events:none}
 .dark .me{background:#141413;color:#ECEBE4}
 .dark .card{background:#30302E;border-color:#3D3D3A;box-shadow:0 1px 6px rgba(0,0,0,.35)}
 .dark .ghost{color:#9C9A92}
@@ -603,7 +607,7 @@ scrollbar-shadow-color:#3D3D3A;scrollbar-highlight-color:#262624;scrollbar-3dlig
 <div id='log'></div>
 <div id='inputarea'>
 <div class='card'>
-<textarea id='ta' rows='1' placeholder='" + App.T("Ask something about the screen…", "Ekran hakkında bir şey sor…") + @"'></textarea>
+<div id='tawrap'><div id='ph'>" + App.T("Ask something about the screen…", "Ekran hakkında bir şey sor…") + @"</div><textarea id='ta' rows='1'></textarea></div>
 <div class='row2'>
 <button id='shot' class='ghost' type='button'><svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'></path><circle cx='12' cy='13' r='4'></circle></svg>" + App.T("New screenshot", "Yeni görüntü") + @"</button>
 <div id='modelwrap'>
@@ -659,6 +663,7 @@ scrollbar-shadow-color:#3D3D3A;scrollbar-highlight-color:#262624;scrollbar-3dlig
   function updateSend() {
     var empty = /^\s*$/.test(ta.value);
     send.disabled = isBusy || empty;
+    document.getElementById('ph').style.display = ta.value.length ? 'none' : 'block';
   }
   function clearLog() { log.innerHTML = ''; }
   function addUser(t) {
