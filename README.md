@@ -59,7 +59,7 @@ cd glint
 
 ## Family
 
-Small, fast, calm Windows tools: [Mote](https://github.com/nihat3371/mote) (Markdown reader) · Glint · [Lumen](https://github.com/nihat3371/lumen) (Claude limit meter; Glint feeds it your usage for free).
+Small, fast, calm Windows tools: [Mote](https://github.com/nihat3371/mote) (Markdown reader) · Glint.
 
 ## License
 
