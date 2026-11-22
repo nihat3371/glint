@@ -685,8 +685,10 @@ class CliBackend : IBackend
                 string t = App.Str(d, "type");
                 if (t == "rate_limit_event")
                 {
-                    var fh = App.D(App.D(App.D(d, "rate_limit_info"), "unifiedWindows"), "five_hour");
+                    var uw = App.D(App.D(d, "rate_limit_info"), "unifiedWindows");
+                    var fh = App.D(uw, "five_hour");
                     if (fh != null) limit = App.Num(fh, "utilization");
+                    if (uw != null) ShareUsage(App.D(uw, "five_hour"), App.D(uw, "seven_day"));
                 }
                 else if (t == "result" && proc == p) { lastResult = (Dictionary<string, object>)d; done.Set(); }
             }
@@ -696,6 +698,24 @@ class CliBackend : IBackend
     }
 
     string Err() { lock (err) return err.ToString().Trim(); }
+
+    // Hand the limit data to Lumen (sibling tray app) for free: %APPDATA%\Lumen\usage.json
+    static void ShareUsage(Dictionary<string, object> five, Dictionary<string, object> week)
+    {
+        try
+        {
+            Func<Dictionary<string, object>, object> w = x => x == null ? null :
+                (object)App.Obj("utilization", App.Num(x, "utilization"), "resetsAt", (long)App.Num(x, "resetsAt"));
+            var o = App.Obj("five_hour", w(five), "seven_day", w(week),
+                            "updated", (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds, "source", "Glint");
+            string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Lumen");
+            Directory.CreateDirectory(dir);
+            string f = Path.Combine(dir, "usage.json"), tmp = f + ".glint.tmp";
+            File.WriteAllText(tmp, App.Json.Serialize(o));
+            if (File.Exists(f)) File.Replace(tmp, f, null); else File.Move(tmp, f);
+        }
+        catch { }
+    }
 
     public Reply Ask(int mi, bool esc, string text, byte[] jpeg)
     {

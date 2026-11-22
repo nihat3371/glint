@@ -59,7 +59,7 @@ cd glint
 
 ## Family
 
-Glint is a sibling of [Mote](https://github.com/nihat3371/mote), a ~50 KB Markdown reader. Small, fast, calm Windows tools.
+Small, fast, calm Windows tools: [Mote](https://github.com/nihat3371/mote) (Markdown reader) · Glint · [Lumen](https://github.com/nihat3371/lumen) (Claude limit meter; Glint feeds it your usage for free).
 
 ## License
 
